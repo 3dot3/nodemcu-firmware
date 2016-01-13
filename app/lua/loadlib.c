@@ -9,15 +9,18 @@
 */
 
 
-#include "c_stdlib.h"
-#include "c_string.h"
-#include "c_fcntl.h"
-#include "flash_fs.h"
-
 #define loadlib_c
 #define LUA_LIB
+#define LUAC_CROSS_FILE
 
 #include "lua.h"
+#include C_HEADER_STDLIB
+#include C_HEADER_STRING
+#include C_HEADER_FCNTL
+
+#ifndef LUA_CROSS_COMPILER
+#include "flash_fs.h"
+#endif
 
 #include "lauxlib.h"
 #include "lualib.h"
@@ -328,7 +331,7 @@ static int ll_loadlib (lua_State *L) {
 ** 'require' function
 ** =======================================================
 */
-#if 0
+#ifdef LUA_CROSS_COMPILER
 static int readable (const char *filename) {
   FILE *f = c_fopen(filename, "r");  /* try to open file */
   if (f == NULL) return 0;  /* open failed */
@@ -389,7 +392,7 @@ static int loader_Lua (lua_State *L) {
   const char *name = luaL_checkstring(L, 1);
   filename = findfile(L, name, "path");
   if (filename == NULL) return 1;  /* library not found in this path */
-#if 0
+#ifdef LUA_CROSS_COMPILER
   if (luaL_loadfile(L, filename) != 0)
 #else
   if (luaL_loadfsfile(L, filename) != 0)
@@ -643,6 +646,7 @@ static const lua_CFunction loaders[] =
   {loader_preload, loader_Lua, loader_C, loader_Croot, NULL};
 
 #if LUA_OPTIMIZE_MEMORY > 0
+#undef MIN_OPT_LEVEL
 #define MIN_OPT_LEVEL 1
 #include "lrodefs.h"
 const LUA_REG_TYPE lmt[] = {

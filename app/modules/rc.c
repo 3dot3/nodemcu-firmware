@@ -1,21 +1,19 @@
-#include "lualib.h"
+#include "module.h"
 #include "lauxlib.h"
 #include "platform.h"
-#include "auxmods.h"
-#include "lrotable.h"
 //#include "driver/easygpio.h"
 //static Ping_Data pingA;
 #define defPulseLen 185
 #define defProtocol 1
 #define defRepeat   10
 #define defBits     24
-void transmit(int pin, int pulseLen, int nHighPulses, int nLowPulses) {
+static void ICACHE_FLASH_ATTR transmit(int pin, int pulseLen, int nHighPulses, int nLowPulses) {
   platform_gpio_write(pin, 1);
   os_delay_us(pulseLen*nHighPulses);
   platform_gpio_write(pin, 0);
   os_delay_us(pulseLen*nLowPulses);
 }
-//rc.send(0,267715,24,185,1)    --GPIO, code, bits, pulselen, protocol
+//rc.send(4,267715,24,185,1,10)    --GPIO, code, bits, pulselen, protocol, repeat
 static int ICACHE_FLASH_ATTR rc_send(lua_State* L) {
   const uint8_t pin = luaL_checkinteger(L, 1);
   platform_gpio_mode(pin, PLATFORM_GPIO_OUTPUT, PLATFORM_GPIO_FLOAT);
@@ -80,17 +78,16 @@ static int ICACHE_FLASH_ATTR rc_send(lua_State* L) {
 
   return 1;
 }
-#define MIN_OPT_LEVEL 2
-#include "lrodefs.h"
-const LUA_REG_TYPE rc_map[] =
-{
+
+// Module function map
+static const LUA_REG_TYPE rc_map[] = {
   { LSTRKEY( "send" ), LFUNCVAL( rc_send )},
   { LNILKEY, LNILVAL}
 };
 
-//LUALIB_API int luaopen_ultra(lua_State *L) {
-LUALIB_API int luaopen_rc(lua_State *L) {
+int luaopen_rc(lua_State *L) {
   // TODO: Make sure that the GPIO system is initialized
-  LREGISTER(L, "rc", rc_map);
-  return 1;
+  return 0;
 }
+
+NODEMCU_MODULE(RC, "rc", rc_map, luaopen_rc);

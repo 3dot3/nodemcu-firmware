@@ -5,16 +5,13 @@
 */
 
 
-#include "c_ctype.h"
-#include "c_stddef.h"
-#include "c_stdio.h"
-#include "c_stdlib.h"
-#include "c_string.h"
-
 #define lstrlib_c
 #define LUA_LIB
+#define LUAC_CROSS_FILE
 
 #include "lua.h"
+#include C_HEADER_STDIO
+#include C_HEADER_STRING
 
 #include "lauxlib.h"
 #include "lualib.h"
@@ -828,6 +825,7 @@ static int str_format (lua_State *L) {
   return 1;
 }
 
+#undef MIN_OPT_LEVEL
 #define MIN_OPT_LEVEL 1
 #include "lrodefs.h"
 const LUA_REG_TYPE strlib[] = {
